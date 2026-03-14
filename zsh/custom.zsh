@@ -2,6 +2,10 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export HOMEBREW_NO_AUTO_UPDATE=1
 
+# Ghostty
+export GHOSTTY_BIN_DIR="/Applications/Ghostty.app/Contents/MacOS"
+export PATH="$GHOSTTY_BIN_DIR:$PATH"
+
 # Pipenv
 export PIPENV_VENV_IN_PROJECT=1
 
@@ -76,6 +80,16 @@ fh() {
 
 # zoxide - a better cd command
 eval "$(zoxide init zsh)"
+
+# yazi
+# https://yazi-rs.github.io/docs/quick-start#shell-wrapper
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	command yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
 
 # Activate syntax highlighting
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
