@@ -1,0 +1,62 @@
+# Build Essentials
+build-essential
+curl
+wget
+git
+cmake
+pkg-config
+autoconf
+automake
+
+# Shell & Terminal
+zsh
+tmux
+fzf
+ripgrep
+eza
+zoxide
+lazygit
+
+# Editors
+neovim
+vim
+
+# Languages & Runtimes
+python3
+python3-pip
+python3-venv
+python3-dev
+
+# Development Libraries
+libssl-dev
+libffi-dev
+libreadline-dev
+libbz2-dev
+libncurses5-dev
+libncursesw5-dev
+zlib1g-dev
+libsqlite3-dev
+xz-utils
+tk-dev
+
+# Database
+postgresql
+postgresql-contrib
+sqlite3
+libsqlite3-dev
+
+# Fonts
+fonts-hack
+fonts-jetbrains-mono
+
+# Clipboard (for X11 and Wayland)
+xclip
+wl-clipboard
+
+# Archive utilities
+unzip
+zip
+
+# System utilities
+htop
+tree

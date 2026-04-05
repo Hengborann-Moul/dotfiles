@@ -1,60 +1,72 @@
 #!/bin/bash
 
-. scripts/utils.sh
-. scripts/prerequisites.sh
-. scripts/brew-install-custom.sh
-. scripts/osx-defaults.sh
-. scripts/symlinks.sh
+set -e
 
-info "Dotfiles intallation initialized..."
+# Get the absolute path of the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+. "$SCRIPT_DIR/scripts/utils.sh"
+
+# Default OS value
+OS="mac"
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --os)
+            OS="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --os <os>     Operating system to install for (mac|ubuntu). Default: mac"
+            echo "  --help, -h    Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0                  # Install for macOS (default)"
+            echo "  $0 --os mac         # Install for macOS (explicit)"
+            echo "  $0 --os ubuntu      # Install for Ubuntu"
+            exit 0
+            ;;
+        *)
+            error "Unknown argument: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Validate OS parameter
+if [[ ! "$OS" =~ ^(mac|ubuntu)$ ]]; then
+    error "Invalid OS '$OS'. Use 'mac' or 'ubuntu'."
+    exit 1
+fi
+
+info "Dotfiles installation initialized for $OS..."
+info "Detected operating system: $(uname -s)"
+
+# Source OS-specific installation script
+case "$OS" in
+    mac)
+        . "$SCRIPT_DIR/scripts/install-mac.sh"
+        ;;
+    ubuntu)
+        . "$SCRIPT_DIR/scripts/install-ubuntu.sh"
+        ;;
+esac
+
+# Interactive prompts
 read -p "Install apps? [y/n] " install_apps
 read -p "Overwrite existing dotfiles? [y/n] " overwrite_dotfiles
 
-if [[ "$install_apps" == "y" ]]; then
-    printf "\n"
-    info "===================="
-    info "Prerequisites"
-    info "===================="
-
-    install_xcode
-    install_homebrew
-
-    printf "\n"
-    info "===================="
-    info "Apps"
-    info "===================="
-
-    install_custom_formulae
-    install_custom_casks
-    run_brew_bundle
-fi
-
-printf "\n"
-info "===================="
-info "OSX System Defaults"
-info "===================="
-
-register_keyboard_shortcuts
-apply_osx_system_defaults
-
-printf "\n"
-info "===================="
-info "Terminal"
-info "===================="
-
-info "Adding .hushlogin file to suppress 'last login' message in terminal..."
-touch ~/.hushlogin
-
-printf "\n"
-info "===================="
-info "Symbolic Links"
-info "===================="
-
-chmod +x ./scripts/symlinks.sh
-if [[ "$overwrite_dotfiles" == "y" ]]; then
-    warning "Deleting existing dotfiles..."
-    ./scripts/symlinks.sh --delete --include-files
-fi
-./scripts/symlinks.sh --create
-
-success "Dotfiles set up successfully."
+# Execute OS-specific installation
+case "$OS" in
+    mac)
+        install_mac "$install_apps" "$overwrite_dotfiles"
+        ;;
+    ubuntu)
+        install_ubuntu "$install_apps" "$overwrite_dotfiles"
+        ;;
+esac

@@ -1,0 +1,16 @@
+# Browser
+brave
+
+# Development
+code
+dbeaver-ce
+
+# Productivity
+obsidian
+
+# Media
+spotify
+vlc
+
+# Container Runtime
+docker
