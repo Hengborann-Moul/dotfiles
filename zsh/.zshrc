@@ -1,7 +1,7 @@
 # zsh Options
 setopt HIST_IGNORE_ALL_DUPS
 
-# Custom zsh
+# Custom zsh (OS-agnostic - loaded based on symlink target)
 [ -f "$HOME/.config/zsh/custom.zsh" ] && source "$HOME/.config/zsh/custom.zsh"
 
 # Aliases
@@ -10,30 +10,27 @@ setopt HIST_IGNORE_ALL_DUPS
 # Work
 [ -f "$HOME/.config/zsh/work.zsh" ] && source "$HOME/.config/zsh/work.zsh"
 
-# Added by Antigravity
-export PATH="/Users/tadashi/.antigravity/antigravity/bin:$PATH"
-
 # opencode
-export PATH=/Users/tadashi/.opencode/bin:$PATH
+export PATH=$HOME/.opencode/bin:$PATH
 
-# Flutter
-export PATH="$HOME/develop/flutter/bin:$PATH"
-
-# Android
-export ANDROID_HOME=~/Library/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
-
+# nvm (Node Version Manager)
 export NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
-[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
-# Java
-export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
-export CPPFLAGS="-I/opt/homebrew/opt/openjdk@17/include"
+# Flutter (if installed)
+if [ -d "$HOME/develop/flutter/bin" ]; then
+    export PATH="$HOME/develop/flutter/bin:$PATH"
+fi
 
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-export PATH=$JAVA_HOME/bin:$PATH
+# Android SDK (if installed)
+if [ -d "$HOME/Android/Sdk" ]; then
+    export ANDROID_HOME="$HOME/Android/Sdk"
+    export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH"
+elif [ -d "$HOME/Library/Android/sdk" ]; then
+    export ANDROID_HOME="$HOME/Library/Android/sdk"
+    export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH"
+fi
 
-# Jenv
-# export PATH="$HOME/.jenv/bin:$PATH"
-# eval "$(jenv init -)"
+# Local bin (for pip installed tools)
+export PATH="$HOME/.local/bin:$PATH"
