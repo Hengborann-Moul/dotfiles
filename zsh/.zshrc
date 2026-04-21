@@ -34,3 +34,5 @@ fi
 
 # Local bin (for pip installed tools)
 export PATH="$HOME/.local/bin:$PATH"
+# opencode
+export PATH=/Users/tadashi/.opencode/bin:$PATH

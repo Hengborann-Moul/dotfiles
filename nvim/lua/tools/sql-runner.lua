@@ -63,7 +63,7 @@ local function run_query(name, cmd)
 
   -- Status: running
   vim.api.nvim_echo({ { '[sql-runner] Running ' .. name .. ' query…', 'ModeMsg' } }, false, {})
-  local t0 = vim.loop.hrtime()
+  local t0 = vim.uv.hrtime()
 
   -- Run the command
   local full_cmd = cmd .. ' > ' .. vim.fn.shellescape(outfile)
@@ -84,7 +84,7 @@ local function run_query(name, cmd)
   end
 
   -- Done message with timing
-  local ms = math.floor((vim.loop.hrtime() - t0) / 1e6)
+  local ms = math.floor((vim.uv.hrtime() - t0) / 1e6)
   vim.api.nvim_echo({ { string.format('[sql-runner] %s query done in %d ms', name, ms), 'ModeMsg' } }, false, {})
 end
 
