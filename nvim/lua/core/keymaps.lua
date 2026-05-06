@@ -102,7 +102,7 @@ local diagnostics_active = true
 
 vim.keymap.set('n', '<leader>do', function()
   diagnostics_active = not diagnostics_active
-  vim.diagnostic.enable(diagnostics_active)
+  vim.diagnostic.enable(diagnostics_active, { bufnr = 0 })
 end, { desc = '[D]iagnostics [O] toggle' })
 
 -- Diagnostic keymaps
