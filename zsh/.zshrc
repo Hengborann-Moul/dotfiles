@@ -36,3 +36,10 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 # opencode
 export PATH=/Users/tadashi/.opencode/bin:$PATH
+
+# bun completions
+[ -s "/Users/tadashi/.bun/_bun" ] && source "/Users/tadashi/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
