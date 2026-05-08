@@ -28,6 +28,52 @@ This repository supports both **macOS** and **Ubuntu** with OS-specific configur
 > [!NOTE]
 > This repo also includes configs for tools I no longer actively use (WezTerm, kitty, iTerm, VSCode, Ranger). I keep them around as reference and for easy reactivation — their symlinks and Brewfile entries are simply commented out.
 
+## OpenCode AI Assistant
+
+This repo also includes a fully configured [OpenCode](https://opencode.ai/) AI assistant setup with specialized agents, custom commands, and automation skills.
+
+### Overview
+
+OpenCode is configured in `opencode/opencode.json` to use `opencode/kimi-k2.6` model with `autoupdate: true`.
+
+### Agents
+
+21 specialized agents for different domains:
+
+| Category | Agents |
+|----------|--------|
+| **General Development** | `architect-designer`, `implementation-specialist`, `tech-lead`, `requirements-clarifier`, `test-automation-engineer` |
+| **Task Decomposition** | `big-pickle-simple-tasks` |
+| **Data Science / ML / MLOps** | `data-pipeline-engineer`, `ml-model-trainer`, `mlops-deployment-engineer`, `deep-learning-specialist`, `data-analyst-storyteller`, `feature-engineer`, `experiment-tracker`, `data-quality-guardian`, `vector-db-specialist`, `data-governance-officer` |
+| **Mobile Development** | `mobile-ui-specialist`, `native-module-bridge`, `mobile-performance-tuner`, `mobile-state-architect`, `mobile-release-engineer` |
+
+Each agent follows a consistent structure with front matter defining `description`, `mode` (primary/subagent), and `tools` restrictions.
+
+### Commands
+
+Custom slash commands available in OpenCode:
+
+- **`/build`** - Builds the project (delegates to `build` agent)
+- **`/scan`** - Scans for vulnerabilities using Snyk MCP
+
+### Skills
+
+**`ship` skill** — Full CI/CD workflow that commits staged changes, pushes the branch, opens a PR, and triggers an automated opencode review.
+
+### TUI Keybindings
+
+Custom keybindings with `ctrl+o` as the leader:
+- `<leader>e` - Editor open
+- `<leader>b` - Sidebar toggle
+- `<leader>a` - Agent list
+- `<leader>m` - Model list
+- `<leader>s` - Status view
+- `ctrl+p` - Command list
+
+### Usage
+
+The opencode config is symlinked to `~/.config/opencode` via `symlinks.conf`. All agents, commands, and skills are automatically available when using OpenCode.
+
 ## Setup
 
 ### Quick Start
@@ -134,6 +180,12 @@ dotfiles/
 │   ├── brew-install-custom.sh # Homebrew custom formulae/casks
 │   ├── osx-defaults.sh        # macOS system defaults
 │   └── symlinks.sh            # Symlink manager (supports OS markers)
+├── opencode/
+│   ├── opencode.json          # OpenCode config (model, autoupdate)
+│   ├── tui.json               # TUI keybindings
+│   ├── agents/               # 21 specialized AI agents
+│   ├── commands/              # Custom slash commands (build, scan)
+│   └── skills/                # Automation skills (ship)
 ├── ubuntu/
 │   ├── packages.txt           # apt packages list
 │   ├── snaps.txt              # snap packages list
