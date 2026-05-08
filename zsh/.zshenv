@@ -29,3 +29,4 @@ export PATH="/usr/local/bin:$PATH"
 
 # Hide computer name in terminal
 export DEFAULT_USER="$(whoami)"
+. "$HOME/.cargo/env"
