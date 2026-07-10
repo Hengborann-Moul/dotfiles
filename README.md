@@ -6,10 +6,11 @@ My config files for maintaining a consistent dev environment across machines.
 
 ## Supported Operating Systems
 
-This repository supports both **macOS** and **Ubuntu** with OS-specific configurations:
+This repository supports **macOS**, **Ubuntu**, and **Windows** with OS-specific configurations:
 
 - **macOS**: Uses Homebrew for package management, includes macOS-specific apps and system defaults
 - **Ubuntu**: Uses apt/snap for packages, includes GNOME settings and Linux-specific configurations
+- **Windows**: PowerShell helper (`win-make-symlink.ps1`) for creating individual symlinks into `$HOME`. The full `install.sh` / `symlinks.sh` flow is macOS/Ubuntu only.
 
 ## Essential Tools
 
@@ -74,6 +75,8 @@ Custom keybindings with `ctrl+o` as the leader:
 
 The opencode config is symlinked to `~/.config/opencode` via `symlinks.conf`. All agents, commands, and skills are automatically available when using OpenCode.
 
+On Windows, use `win-make-symlink.ps1` (see [Windows symlink script](#windows-symlink-script)) as a PowerShell equivalent of the bash `symlinks.sh` flow — its default links the opencode config to `~/.config/opencode`, mirroring the macOS/Ubuntu `symlinks.conf` entry.
+
 ## Setup
 
 ### Quick Start
@@ -87,6 +90,22 @@ The opencode config is symlinked to `~/.config/opencode` via `symlinks.conf`. Al
 ```bash
 ./install.sh --os ubuntu
 ```
+
+**Windows (PowerShell):**
+The repo ships a `win-make-symlink.ps1` helper as a PowerShell equivalent of the bash `symlinks.sh` flow. Run it from a PowerShell prompt at the repo root:
+
+```powershell
+# Use the default: link the opencode config to $HOME\.config\opencode
+.\win-make-symlink.ps1
+
+# Or link any source to any target
+.\win-make-symlink.ps1 -Source ".\nvim" -Target "$HOME\.config\nvim"
+
+# Remove a previously created symlink
+.\win-make-symlink.ps1 -Delete
+```
+
+The default mirrors the `symlinks.conf:12` entry for macOS/Ubuntu, so the full OpenCode config — agents, commands, skills, plus `opencode.json`/`opencode.jsonc` — becomes available at the standard config location. See the [Windows symlink script](#windows-symlink-script) section below for full details.
 
 ### Advanced Options
 
@@ -166,11 +185,19 @@ To remove all symlinks created by the installation script:
 
 This only removes the symlinks, not the actual config files, so you can easily revert if needed.
 
+**Windows:**
+```powershell
+.\win-make-symlink.ps1 -Delete
+```
+
+`-Delete` only touches reparse points (symlinks/junctions) and refuses to remove real files or directories. Move those manually first if you want them gone.
+
 ## File Structure
 
 ```
 dotfiles/
 ├── install.sh                  # Main installer with --os argument
+├── win-make-symlink.ps1        # Windows PowerShell symlink helper (see below)
 ├── scripts/
 │   ├── utils.sh               # Shared utility functions
 │   ├── install-mac.sh         # macOS-specific installation
@@ -212,6 +239,49 @@ dotfiles/
 ```
 
 ## OS-Specific Configurations
+
+### Windows symlink script
+
+`win-make-symlink.ps1` is a small PowerShell wrapper around `New-Item -ItemType SymbolicLink` for one-off symlinks on Windows. It is the PowerShell equivalent of the bash `scripts/symlinks.sh` for users who can't run the bash installer (e.g. native Windows PowerShell without WSL or Git Bash). The default mirrors the `symlinks.conf:12` opencode entry, but `-Source` and `-Target` accept any path for ad-hoc links.
+
+**Default behaviour:** when invoked with no arguments, the script links the whole `.\opencode` directory (relative to the script) to `$HOME\.config\opencode`. This mirrors the `symlinks.conf:12` entry `$(pwd)/opencode:$HOME/.config` that the macOS/Ubuntu installers apply, and makes the full OpenCode config available at the standard location: agents, commands, skills, plus `opencode.json` / `opencode.jsonc`. On a successful run the slash-commands in `opencode/commands/build.md`, `commit.md`, `review.md`, and `scan.md` are immediately available as `/build`, `/commit`, `/review`, and `/scan` in OpenCode.
+
+**Usage:**
+
+```powershell
+# Use defaults (whole opencode config -> $HOME\.config\opencode)
+.\win-make-symlink.ps1
+
+# Explicit source and target
+.\win-make-symlink.ps1 -Source ".\nvim" -Target "$HOME\.config\nvim"
+
+# Remove a symlink
+.\win-make-symlink.ps1 -Delete
+
+# Remove a symlink at a non-default location
+.\win-make-symlink.ps1 -Target "$HOME\.config\nvim" -Delete
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `-Source` | string | `<repo>\opencode` | Existing file/folder the link points to. |
+| `-Target` | string | `$HOME\.config\opencode` | Path of the link to create. |
+| `-Delete` | switch | off | Remove the reparse point at `-Target` instead of creating one. |
+
+**Safety behaviour:**
+
+- Refuses to create a symlink if `-Target` already exists (including a regular directory or file). Move or delete it first.
+- `-Delete` only removes reparse points (symlinks or junctions). It errors out on real files/dirs so you cannot accidentally nuke content with the wrong flag.
+- Missing parent directories under `-Target` are created automatically.
+- Creates symbolic links, not junctions, so the same script semantics apply whether the target is a file or a folder.
+
+**Prerequisites (Windows-only):** The script self-elevates. When launched from a non-administrator session, it re-launches itself with `Start-Process -Verb RunAs`, which triggers the standard UAC prompt. Click *Yes* to allow elevation, and the elevated instance does the work in a new PowerShell window and **stays open after the script finishes** (via `powershell.exe -NoExit`) so the output is readable. Click *No* and the script exits without making changes. The script must be invoked as a file (e.g. `.\win-make-symlink.ps1`); piping or `-Command` invocations cannot self-elevate. The UAC prompt is shown even if Developer Mode is enabled — the script does not probe for Dev Mode.
+
+**Unelevated-user path guarantee:** The script resolves `-Source` and `-Target` to absolute paths in the unelevated scope and passes them explicitly to the elevated child, so the symlink is always created in the *invoking user's* profile, not whatever `$HOME` the elevated process happens to see. (Under UAC, an elevated process can see a different `$HOME` than the unelevated session, e.g. `C:\Users\Administrator` if elevation is into a different account — without this guarantee, the symlink would land in the wrong profile.)
+
+**Why not just use `symlinks.conf`?** `symlinks.conf` is consumed by `scripts/symlinks.sh`, which is bash-only and not portable to native Windows PowerShell. The helper exists so Windows users get the same one-shot symlink behaviour without needing WSL or Git Bash to run the bash installer. Its default mirrors the `symlinks.conf:12` opencode entry, but you can point `-Source` / `-Target` at any other path for ad-hoc links.
 
 ### Symlinks Configuration
 
@@ -303,6 +373,24 @@ sudo usermod -aG docker $USER
 
 # Log out and log back in for changes to take effect
 ```
+
+### Windows: UAC prompt was declined
+
+`win-make-symlink.ps1` self-elevates on launch via `Start-Process -Verb RunAs`, so the very first run pops a UAC dialog. If you click *No*, the script exits without changes. Re-run from a normal PowerShell and click *Yes* on the prompt, **or** invoke the script from an already-elevated session (right-click *Terminal* / *PowerShell* > *Run as administrator*) to skip the prompt.
+
+If you launched from `-Command` or via `iex`, the script prints a "Cannot self-elevate" error instead. Always invoke it as a file:
+
+```powershell
+.\win-make-symlink.ps1
+```
+
+If `-Target` is a real directory (not a symlink), `-Delete` will refuse to remove it. Verify with:
+
+```powershell
+Get-Item $HOME\.config\opencode -Force | Select-Object Attributes, LinkType
+```
+
+`LinkType` should report `SymbolicLink` after a successful create; an empty `LinkType` means it's a regular directory, so back it up with `Move-Item` before re-running the create.
 
 ## Contributing
 
